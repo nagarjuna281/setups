@@ -1,40 +1,47 @@
 #!/bin/bash
 set -e
 
+# Variables
 NEXUS_USER="nexus"
 NEXUS_INSTALL_DIR="/opt/nexus"
 NEXUS_DATA_DIR="/opt/sonatype-work"
 NEXUS_URL="https://download.sonatype.com/nexus/3/latest-unix.tar.gz"
 SERVICE_FILE="/etc/systemd/system/nexus.service"
 
-# Update packages
+# Check if running as root
+if [ "$(id -u)" -ne 0 ]; then
+  # Please run this script as root or with sudo.
+  exit 1
+fi
+
+# Updating packages...
 apt update && apt upgrade -y
 
-# Install Java and wget
+# Installing Java and wget...
 apt install -y openjdk-11-jdk wget
 
-# Create nexus user
+# Creating nexus user if it doesn't exist...
 if ! id -u $NEXUS_USER >/dev/null 2>&1; then
   adduser --system --no-create-home --group $NEXUS_USER
 fi
 
-# Download Nexus
+# Downloading Nexus...
 cd /opt
 wget -q --show-progress $NEXUS_URL -O nexus.tar.gz
 
-# Extract Nexus
+# Extracting Nexus...
 tar -xzf nexus.tar.gz
 rm nexus.tar.gz
 mv nexus-3* nexus
 
-# Set ownership
+# Setting ownership...
 chown -R $NEXUS_USER:$NEXUS_USER $NEXUS_INSTALL_DIR
-chown -R $NEXUS_USER:$NEXUS_USER $NEXUS_DATA_DIR
+chown -R $NEXUS_USER:$NEXUS_USER $NEXUS_DATA_DIR || mkdir -p $NEXUS_DATA_DIR && chown -R $NEXUS_USER:$NEXUS_USER $NEXUS_DATA_DIR
 
-# Configure Nexus user
+# Configuring Nexus user...
 echo "run_as_user=\"$NEXUS_USER\"" > $NEXUS_INSTALL_DIR/bin/nexus.rc
 
-# Create systemd service
+# Creating systemd service file...
 cat > $SERVICE_FILE <<EOF
 [Unit]
 Description=Sonatype Nexus Repository Manager
@@ -53,18 +60,22 @@ Restart=on-abort
 WantedBy=multi-user.target
 EOF
 
-# Reload systemd and enable Nexus
+# Reloading systemd daemon...
 systemctl daemon-reload
+
+# Enabling Nexus service to start on boot...
 systemctl enable nexus
+
+# Starting Nexus service...
 systemctl start nexus
 
-# Wait for Nexus to start
+# Waiting 30 seconds for Nexus to start...
 sleep 30
 
-# Nexus status:
+# Checking Nexus service status...
 systemctl status nexus --no-pager
 
-# Open port 8081 if ufw active
+# Opening port 8081 if ufw is active...
 if command -v ufw >/dev/null 2>&1; then
   ufw allow 8081/tcp || true
   ufw reload || true
