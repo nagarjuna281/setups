@@ -1,23 +1,30 @@
-#!/bin/bash
+# Update package list
+apt update
 
-# STEP-1: INSTALLING GIT
-sudo apt update
-sudo apt install git -y
+# Install Java 17
+apt install openjdk-17-jdk -y
 
-# STEP-2: ADD JENKINS REPOSITORY AND KEY
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+# Add Jenkins repository key
+mkdir -p /etc/apt/keyrings
+wget -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
 
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
+# Add Jenkins repository
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" > /etc/apt/sources.list.d/jenkins.list
 
-# STEP-3: INSTALL JAVA 17 AND JENKINS
-sudo apt update
-sudo apt install openjdk-17-jdk -y
-sudo apt install jenkins -y
+# Update package list again (to include Jenkins repo)
+apt update
 
-# STEP-4: START AND ENABLE JENKINS SERVICE
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
-sudo systemctl status jenkins
+# Install Jenkins
+apt install jenkins -y
+
+# Start Jenkins
+systemctl start jenkins
+
+# Enable Jenkins to start on boot
+systemctl enable jenkins
+
+# Restart Jenkins (optional, but ensures it's running with the latest config)
+systemctl restart jenkins
+
+# Check Jenkins status
+systemctl status jenkins
