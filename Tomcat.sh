@@ -1,25 +1,26 @@
-#!/bin/bash
+# 1. Update and install Java 17 and wget
+apt update
+apt install openjdk-17-jdk wget -y
 
-# Install Java 17 Amazon Corretto on Ubuntu
-wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
-sudo apt update -y
-sudo apt install -y java-17-amazon-corretto-jdk
+# 2. Download Tomcat 9.0.108
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.108/bin/apache-tomcat-9.0.108.tar.gz
 
-# Download and extract Tomcat 9.0.107
-wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.107/bin/apache-tomcat-9.0.107.tar.gz
-tar -zxvf apache-tomcat-9.0.107.tar.gz
+# 3. Extract Tomcat
+tar -xzf apache-tomcat-9.0.108.tar.gz
 
-# Modify tomcat-users.xml
-sed -i '56  a\<role rolename="manager-gui"/>' apache-tomcat-9.0.107/conf/tomcat-users.xml
-sed -i '57  a\<role rolename="manager-script"/>' apache-tomcat-9.0.107/conf/tomcat-users.xml
-sed -i '58  a\<user username="tomcat" password="admin@123" roles="manager-gui, manager-script"/>' apache-tomcat-9.0.107/conf/tomcat-users.xml
-sed -i '59  a\</tomcat-users>' apache-tomcat-9.0.107/conf/tomcat-users.xml
-sed -i '56d' apache-tomcat-9.0.107/conf/tomcat-users.xml
+# 4. Give execute permissions to scripts
+chmod +x apache-tomcat-9.0.108/bin/*.sh
 
-# Modify context.xml
-sed -i '21d' apache-tomcat-9.0.107/webapps/manager/META-INF/context.xml
-sed -i '22d'  apache-tomcat-9.0.107/webapps/manager/META-INF/context.xml
+# 5. Configure manager user and roles in tomcat-users.xml
+sed -i '56  a\<role rolename="manager-gui"/>' apache-tomcat-9.0.108/conf/tomcat-users.xml
+sed -i '57  a\<role rolename="manager-script"/>' apache-tomcat-9.0.108/conf/tomcat-users.xml
+sed -i '58  a\<user username="tomcat" password="admin@123" roles="manager-gui,manager-script"/>' apache-tomcat-9.0.108/conf/tomcat-users.xml
+sed -i '59  a\</tomcat-users>' apache-tomcat-9.0.108/conf/tomcat-users.xml
+sed -i '56d' apache-tomcat-9.0.108/conf/tomcat-users.xml
 
-# Start Tomcat
-sh apache-tomcat-9.0.107/bin/startup.sh
+# 6. Allow remote access to the manager app
+sed -i '21d' apache-tomcat-9.0.108/webapps/manager/META-INF/context.xml
+sed -i '22d' apache-tomcat-9.0.108/webapps/manager/META-INF/context.xml
+
+# 7. Start Tomcat
+sh apache-tomcat-9.0.108/bin/startup.sh
