@@ -1,6 +1,12 @@
 # Update package list
 apt update
 
+# Installing git
+apt install git -y
+
+# Update package list
+apt update
+
 # Install Java 17
 apt install openjdk-17-jdk -y
 
