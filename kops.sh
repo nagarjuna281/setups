@@ -20,7 +20,7 @@ export KOPS_STATE_STORE=s3://arjun.k8s.local
 # Create Kubernetes cluster
 kops create cluster \
   --name arjun.k8s.local \
-  --zones us-east-1a,us-east-1b \
+  --zones us-east-1a \
   --master-count=1 \
   --master-size t2.large \
   --master-volume-size=30 \
