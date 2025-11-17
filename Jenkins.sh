@@ -1,4 +1,3 @@
-Install Jenkins
 #STEP-1: INSTALLING GIT 
 yum install git  -y
 #STEP-2: GETTING THE REPO (jenkins.io --> download -- > redhat)
